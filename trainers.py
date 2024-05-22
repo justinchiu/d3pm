@@ -24,7 +24,6 @@ from absl import logging
 import chex
 import flax
 from flax import linen as nn
-from flax import optim
 import flax.serialization
 from flax.training import checkpoints
 import gin
@@ -32,10 +31,11 @@ import jax
 import jax.example_libraries.optimizers
 import jax.numpy as jnp
 import jax.random as jrandom
+import optax
 
-from d3pm.text import datasets  # pylint: disable=unused-import
-from d3pm.text import types
-from d3pm.text import utils
+import datasets  # pylint: disable=unused-import
+import types
+import utils
 
 
 def l2_norm(params):
@@ -76,7 +76,8 @@ def _pmap_preprocess_batch(batch, features=None, disabled=False, max_batch_size=
 
 @flax.struct.dataclass
 class TrainState:
-    optimizer: flax.optim.Optimizer
+    #optimizer: flax.optim.Optimizer
+    optimizer: optax.OptState
     step: chex.Array
 
     # parameters for handling outlier rejection
@@ -428,8 +429,8 @@ def initialize_params_and_optimizer(
     return state
 
 
-gin.external_configurable(optim.Adam, name="Adam")
-gin.external_configurable(optim.Adafactor, name="Adafactor")
+#gin.external_configurable(optim.Adam, name="Adam")
+#gin.external_configurable(optim.Adafactor, name="Adafactor")
 
 
 @gin.configurable(denylist=["dataset_info", "task"], module="trainers")
@@ -442,7 +443,7 @@ class Trainer:
         task,
         *,
         model_cls,
-        optimizer_cls=optim.Adam,
+        optimizer_cls=optax.adamw,
         learning_rate_fn=utils.create_learning_rate_scheduler,
         random_seed=42,
         disable_pmap=False,
