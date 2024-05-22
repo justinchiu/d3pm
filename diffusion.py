@@ -37,7 +37,7 @@ import metrics
 import model_utils
 import models
 import tasks
-import types
+import mytypes
 import utils
 
 gin.external_configurable(
